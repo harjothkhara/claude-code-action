@@ -9,7 +9,7 @@ jobs:
     runs-on: [self-hosted, foo]
     if: contains(github.event.comment.body, '@claude')
     container:
-      image: golang:1.24-bullseye
+      image: golang:1.20-bullseye
 
     permissions:
       contents: read
@@ -33,6 +33,6 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
             echo "$PATH"
-            go version
+            echo go version
           allowed_tools: "Bash,Read,Edit,Write,Grep,Task,Replace"
         continue-on-error: true
