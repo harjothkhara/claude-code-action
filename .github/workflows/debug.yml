@@ -27,23 +27,21 @@ jobs:
       - name: Print Go version
         run: go version
 
-      - name: Debug API Key (Partial)
+      - name: Create prompt file
         run: |
-          # Print first few and last few characters of the API key for debugging
-          # This is safe as it doesn't reveal the full key
-          echo "API Key starts with: ${ANTHROPIC_API_KEY:0:7}... and ends with ...${ANTHROPIC_API_KEY: -4}"
-          echo "API Key length: ${#ANTHROPIC_API_KEY}"
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          mkdir -p /tmp/claude-prompts
+          cat > /tmp/claude-prompts/prompt.txt << 'EOF'
+          Please run the following commands and explain what you see in the output:
+          1. echo $PATH
+          2. go version
 
-      - name: Run Claude Code with Debug
-        uses: anthropics/claude-code-action@main
+          What do these outputs tell us about the container environment?
+          EOF
+
+      - name: Run Claude Code Base Action
+        uses: anthropics/claude-code-base-action@v0.0.18
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt_file: /tmp/claude-prompts/prompt.txt
           allowed_tools: "Bash,Read,Edit,Write,Grep,Task,Replace"
-          direct_prompt: |
-            Please echo the $PATH and echo the go version in this environment.
-            Run these commands and explain what you see in the output.
-          model: "claude-3-haiku-20240307" # Try using a smaller, less expensive model
-        env:
-          ACTIONS_STEP_DEBUG: true # Enable debug logging
+          model: "claude-3-haiku-20240307"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
