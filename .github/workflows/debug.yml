@@ -14,11 +14,11 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: read
+      pull-requests: write
       id-token: write
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Print container PATH
@@ -27,12 +27,23 @@ jobs:
       - name: Print Go version
         run: go version
 
-      - name: Run Claude Code debug
+      - name: Debug API Key (Partial)
+        run: |
+          # Print first few and last few characters of the API key for debugging
+          # This is safe as it doesn't reveal the full key
+          echo "API Key starts with: ${ANTHROPIC_API_KEY:0:7}... and ends with ...${ANTHROPIC_API_KEY: -4}"
+          echo "API Key length: ${#ANTHROPIC_API_KEY}"
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Run Claude Code with Debug
         uses: anthropics/claude-code-action@main
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: |
-            echo "$PATH"
-            echo go version
           allowed_tools: "Bash,Read,Edit,Write,Grep,Task,Replace"
-        continue-on-error: true
+          direct_prompt: |
+            Please echo the $PATH and echo the go version in this environment.
+            Run these commands and explain what you see in the output.
+          model: "claude-3-haiku-20240307" # Try using a smaller, less expensive model
+        env:
+          ACTIONS_STEP_DEBUG: true # Enable debug logging
