@@ -23,9 +23,11 @@ jobs:
 
       - name: Print container PATH
         run: echo "$PATH"
+        id: path_output
 
       - name: Print Go version
         run: go version
+        id: go_version
 
       - name: Create prompt file
         run: |
@@ -45,3 +47,6 @@ jobs:
           allowed_tools: "Bash(echo $PATH),Bash(go version),Read,Edit,Write,Grep,Task,Replace"
           model: "claude-3-haiku-20240307"
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+        env:
+          PATH_OUTPUT: ${{ steps.path_output.outputs.stdout }}
+          GO_VERSION: ${{ steps.go_version.outputs.stdout }}
